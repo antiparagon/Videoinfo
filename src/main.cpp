@@ -2,8 +2,8 @@
 //  main.cpp
 //  VideoInfo
 //
-//  Created by William McKay on 06/29/19.
-//  Copyright © 2019 William McKay. All rights reserved.
+//  Created by Antiparagon on 06/29/19.
+//  Copyright © 2019 Antiparagon. All rights reserved.
 //
 
 #include <string>
@@ -16,8 +16,6 @@ using namespace videoinfo;
 
 /*
  TODO:
- - Setup Git repo for code and upload to Github
- - Save video frame as a JPEG of a chosen size
  - Grab a frame from anywhere in a video
  - Update output_html_video_report to use JPEG images, link to videos
  - Add number of people count, chip-outs of peoples faces in html report

@@ -2,8 +2,8 @@
 //  main.cpp
 //  VideoInfo
 //
-//  Created by William McKay on 07/29/19.
-//  Copyright © 2019 William McKay. All rights reserved.
+//  Created by Antiparagon on 07/29/19.
+//  Copyright © 2019 Antiparagon. All rights reserved.
 //
 #pragma once
 

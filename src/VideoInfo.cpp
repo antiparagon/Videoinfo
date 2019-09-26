@@ -2,7 +2,7 @@
 //  VideoInfo.cpp
 //  videoinfo
 //
-//  Created by William McKay on 8/2/19.
+//  Created by Antiparagon on 8/2/19.
 //
 #include "VideoInfo.h"
 
