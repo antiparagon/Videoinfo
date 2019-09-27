@@ -48,6 +48,7 @@ int main()
     });
     //*/
     
+    /*
     std::all_of(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
 
         cv::Mat mat = VideoInfo::get_first_frame_mat(info, 1280, 720);
@@ -68,6 +69,18 @@ int main()
          
         return (key != 27);
     });
+    //*/
+    
+    std::ofstream out("videoinfo.html");
+    if(out)
+    {
+        VideoInfo::output_html_video_report(video_infos, out);
+    }
+    else
+    {
+        std::cerr << "Unable to open file for html output" << '\n';
+    }
+    return 0;
 }
 
 

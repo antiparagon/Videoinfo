@@ -615,8 +615,68 @@ void VideoInfo::output_txt_video_report(const std::vector<VideoInfo> &videoinfos
 
 void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfos, std::ostream &out)
 {
+    out << "<html>" << '\n';
+    out << "<pre>" << '\n';
+    out << "Videos found: " << videoinfos.size() << '\n';
+    out << '\n';
+
     for(auto &info : videoinfos)
     {
-        std::cout << "Video: " << info.file_name << '\n';
+        out << "Path: " << info.file_path << '\n';
+        out << "Video: " << info.file_name << '\n';
+        out << "Extension: " << info.file_ext << '\n';
+        out << "Format: " << info.iformat_name << '\n';
+        out << "Duration (sec): " << info.duration / 100000 << '\n';
+        out << "Bit Rate: " << info.bit_rate << '\n';
+        out << "Number of streams: " << info.streams.size() << '\n';
+        for(int i = 0; i < info.streams.size(); ++i)
+        {
+            auto &stream = info.streams[i];
+            out << "Stream " << i << ":" << '\n';
+            if(stream.codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                out << "Stream Type: " << "VIDEO" << '\n';
+                out << "Resolution: " << stream.width << "x" << stream.height << '\n';
+                out << "Codec name: " << stream.codec_name << '\n';
+                out << "Avg Bitrate: " << stream.bit_rate / 1e6 << " Mb/s" << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                out << "Stream Type: " << "AUDIO" << '\n';
+                out << "Sample Rate: " << stream.sample_rate << '\n';
+                out << "Codec name: " << stream.codec_name << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_DATA)
+            {
+                out << "Stream Type: " << "DATA" << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_SUBTITLE)
+            {
+                out << "Stream Type: " << "SUBTITLE" << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_ATTACHMENT)
+            {
+                out << "Stream Type: " << "ATTACHMENT" << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_NB)
+            {
+                out << "Stream Type: " << "NB" << '\n';
+            }
+            else if(stream.codec_type == AVMEDIA_TYPE_UNKNOWN)
+            {
+                out << "Stream Type: " << "UNKNOWN" << '\n';
+            }
+            else
+            {
+                out << "Stream Type: " << "ERROR: NOT DETERMINED" << '\n';
+            }
+            out << "Start time: " << stream.start_time << '\n';
+            out << "Duration: " << stream.duration << '\n';
+            
+        }
+        out << '\n';
     }
+    out << '\n';
+    out << "</pre>" << '\n';
+    out << "</html>" << '\n';
 }
