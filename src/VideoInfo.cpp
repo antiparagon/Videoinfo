@@ -616,6 +616,31 @@ void VideoInfo::output_txt_video_report(const std::vector<VideoInfo> &videoinfos
 void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfos, std::ostream &out)
 {
     out << "<html>" << '\n';
+    
+    out << "<!DOCTYPE html>" << '\n';
+    out << "<html>" << '\n';
+    out << "<head>" << '\n';
+    out << "<style>" << '\n';
+    out << "table {" << '\n';
+    out << "  font-family: arial, sans-serif;" << '\n';
+    out << "  border-collapse: collapse;" << '\n';
+    //out << "  width: 100%;" << '\n';
+    out << "}" << '\n';
+
+    out << "td, th {" << '\n';
+    out << "  border: 1px solid #dddddd;" << '\n';
+    out << "  text-align: left;" << '\n';
+    out << "  padding: 8px;" << '\n';
+    out << "}" << '\n';
+
+    out << "tr:nth-child(even) {" << '\n';
+    out << "  background-color: #dddddd;" << '\n';
+    out << "}" << '\n';
+    out << "</style>" << '\n';
+    out << "</head>" << '\n';
+    out << "<body>" << '\n';
+    
+    
     out << "Videos found: " << videoinfos.size() << '\n';
     out << '\n';
     
@@ -681,5 +706,6 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
         out << '\n';
     }
     out << '\n';
+    out << "</body>" << '\n';
     out << "</html>" << '\n';
 }
