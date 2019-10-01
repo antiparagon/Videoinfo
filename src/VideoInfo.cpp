@@ -616,67 +616,70 @@ void VideoInfo::output_txt_video_report(const std::vector<VideoInfo> &videoinfos
 void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfos, std::ostream &out)
 {
     out << "<html>" << '\n';
-    out << "<pre>" << '\n';
     out << "Videos found: " << videoinfos.size() << '\n';
     out << '\n';
+    
+    
 
     for(auto &info : videoinfos)
     {
-        out << "Path: " << info.file_path << '\n';
-        out << "Video: " << info.file_name << '\n';
-        out << "Extension: " << info.file_ext << '\n';
-        out << "Format: " << info.iformat_name << '\n';
-        out << "Duration (sec): " << info.duration / 100000 << '\n';
-        out << "Bit Rate: " << info.bit_rate << '\n';
-        out << "Number of streams: " << info.streams.size() << '\n';
+        out << "<table>" << '\n';
+        out << "<tr><td>" << "Path: " << "</td><td>" <<  info.file_path << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Video: " << "</td><td>" <<  info.file_name << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Extension: " << "</td><td>" <<  info.file_ext << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Format: " << "</td><td>" <<  info.iformat_name << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Duration (sec): " << "</td><td>" <<  info.duration / 100000 << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Bit Rate: " << "</td><td>" <<  info.bit_rate << "</td></tr>" << '\n';
+        out << "<tr><td>" << "Number of streams: " << "</td><td>" <<  info.streams.size() << "</td></tr>" << '\n';
         for(int i = 0; i < info.streams.size(); ++i)
         {
             auto &stream = info.streams[i];
-            out << "Stream " << i << ":" << '\n';
+            out << "<tr><td>" << "Stream " << i << ":" << "</td></tr>" << '\n';
             if(stream.codec_type == AVMEDIA_TYPE_VIDEO)
             {
-                out << "Stream Type: " << "VIDEO" << '\n';
-                out << "Resolution: " << stream.width << "x" << stream.height << '\n';
-                out << "Codec name: " << stream.codec_name << '\n';
-                out << "Avg Bitrate: " << stream.bit_rate / 1e6 << " Mb/s" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "VIDEO" << "</td></tr>" << '\n';
+                out << "<tr><td>" << "Resolution: " << "</td><td>" <<  stream.width << "x" << stream.height << "</td></tr>" << '\n';
+                out << "<tr><td>" << "Codec name: " << "</td><td>" <<  stream.codec_name << "</td></tr>" << '\n';
+                out << "<tr><td>" << "Avg Bitrate: " << "</td><td>" <<  stream.bit_rate / 1e6 << " Mb/s" << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_AUDIO)
             {
-                out << "Stream Type: " << "AUDIO" << '\n';
-                out << "Sample Rate: " << stream.sample_rate << '\n';
-                out << "Codec name: " << stream.codec_name << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "AUDIO" << "</td></tr>" << '\n';
+                out << "<tr><td>" << "Sample Rate: " << "</td><td>" <<  stream.sample_rate << "</td></tr>" << '\n';
+                out << "<tr><td>" << "Codec name: " << "</td><td>" <<  stream.codec_name << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_DATA)
             {
-                out << "Stream Type: " << "DATA" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "DATA" << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_SUBTITLE)
             {
-                out << "Stream Type: " << "SUBTITLE" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "SUBTITLE" << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_ATTACHMENT)
             {
-                out << "Stream Type: " << "ATTACHMENT" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "ATTACHMENT" << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_NB)
             {
-                out << "Stream Type: " << "NB" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "NB" << "</td></tr>" << '\n';
             }
             else if(stream.codec_type == AVMEDIA_TYPE_UNKNOWN)
             {
-                out << "Stream Type: " << "UNKNOWN" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "UNKNOWN" << "</td></tr>" << '\n';
             }
             else
             {
-                out << "Stream Type: " << "ERROR: NOT DETERMINED" << '\n';
+                out << "<tr><td>" << "Stream Type: " << "</td><td>" <<  "ERROR: NOT DETERMINED" << "</td></tr>" << '\n';
             }
-            out << "Start time: " << stream.start_time << '\n';
-            out << "Duration: " << stream.duration << '\n';
+            out << "<tr><td>" << "Start time: " << "</td><td>" <<  stream.start_time << "</td></tr>" << '\n';
+            out << "<tr><td>" << "Duration: " << "</td><td>" <<  stream.duration << "</td></tr>" << '\n';
             
         }
+        out << "</table>" << '\n';
+        out << "</br>" << '\n';
         out << '\n';
     }
     out << '\n';
-    out << "</pre>" << '\n';
     out << "</html>" << '\n';
 }
