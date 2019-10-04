@@ -15,6 +15,18 @@ using namespace boost::algorithm;
 using namespace boost::filesystem;
 using namespace videoinfo;
 
+void VideoInfo::save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height)
+{
+    cv::Mat mat = VideoInfo::get_first_frame_mat(video_info, width, height);
+    
+    if (mat.empty())
+    {
+        std::cerr << "Could create Mat for first frame: " << video_info.file_path << '\n';
+        return;
+    }
+    
+    cv::imwrite(thumbnail_path, mat);
+}
 
 cv::Mat VideoInfo::get_first_frame_mat(const VideoInfo &video_info, int width, int height)
 {
@@ -210,7 +222,7 @@ int VideoInfo::decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, A
     return 0;
 }
 
-void VideoInfo::save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height)
+void VideoInfo::save_video_thumbnail_ppm(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height)
 {
     std::cout << "Saving thumbnail: " << thumbnail_path << '\n';
     
@@ -346,7 +358,7 @@ void VideoInfo::save_video_thumbnail(const VideoInfo &video_info, const std::str
             save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, thumbnail_path);
             
             sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data, pFrame->linesize, 0, pCodecContext->height, pFrameRGB->data, pFrameRGB->linesize);
-            save_color_frame(pFrameRGB, width, height, video_info.file_name + ".ppm");
+            save_color_frame(pFrameRGB, width, height, thumbnail_path);
             
             av_packet_unref(pPacket);
             break;
@@ -624,7 +636,6 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
     out << "table {" << '\n';
     out << "  font-family: arial, sans-serif;" << '\n';
     out << "  border-collapse: collapse;" << '\n';
-    //out << "  width: 100%;" << '\n';
     out << "}" << '\n';
 
     out << "td, th {" << '\n';
@@ -640,17 +651,23 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
     out << "</head>" << '\n';
     out << "<body>" << '\n';
     
-    
+    out << "<p/>" << '\n';
     out << "Videos found: " << videoinfos.size() << '\n';
+    out << "<p/>" << '\n';
     out << '\n';
-    
-    
 
     for(auto &info : videoinfos)
     {
         out << "<table>" << '\n';
+        
+        std::string thubnail_name = info.file_name + ".jpg";
+        int width = 160;
+        int height = 90;
+        
+        save_video_thumbnail(info, thubnail_name, width, height);
+        
+        out << "<tr><td>" << info.file_name << "</td><td>" <<  "<img src=\"" << thubnail_name << "\" width=\"" << width << "\" height=\"" << height << "\" >" << "</td></tr>" << '\n';
         out << "<tr><td>" << "Path: " << "</td><td>" <<  info.file_path << "</td></tr>" << '\n';
-        out << "<tr><td>" << "Video: " << "</td><td>" <<  info.file_name << "</td></tr>" << '\n';
         out << "<tr><td>" << "Extension: " << "</td><td>" <<  info.file_ext << "</td></tr>" << '\n';
         out << "<tr><td>" << "Format: " << "</td><td>" <<  info.iformat_name << "</td></tr>" << '\n';
         out << "<tr><td>" << "Duration (sec): " << "</td><td>" <<  info.duration / 100000 << "</td></tr>" << '\n';
@@ -702,7 +719,9 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
             
         }
         out << "</table>" << '\n';
-        out << "</br>" << '\n';
+        out << "<br/>" << '\n';
+        out << "<br/>" << '\n';
+        out << "<br/>" << '\n';
         out << '\n';
     }
     out << '\n';

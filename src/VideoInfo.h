@@ -61,6 +61,8 @@ namespace videoinfo
         
         static void save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height);
         
+        static void save_video_thumbnail_ppm(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height);
+        
         static VideoInfo get_video_info(const boost::filesystem::path &video_path);
         static void output_txt_video_report(const std::vector<VideoInfo> &videoinfos, std::ostream &out);
         static void output_html_video_report(const std::vector<VideoInfo> &videoinfos, std::ostream &out);
