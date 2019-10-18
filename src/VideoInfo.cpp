@@ -498,7 +498,7 @@ VideoInfo VideoInfo::get_video_info(const boost::filesystem::path &video_path)
         
         sinfo.codec_name = pLocalCodec->name;
         sinfo.codec_id = pLocalCodec->id;
-        sinfo.bit_rate = pCodecParameters->bit_rate;
+        sinfo.bit_rate = pLocalCodecParameters->bit_rate;
         
         info.streams.push_back(sinfo);
     }
@@ -661,12 +661,20 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
         out << "<table>" << '\n';
         
         std::string thubnail_name = info.file_name + ".jpg";
-        int width = 160;
-        int height = 90;
+        int width = 320;
+        int height = 180;
         
         save_video_thumbnail(info, thubnail_name, width, height);
         
-        out << "<tr><td>" << info.file_name << "</td><td>" <<  "<img src=\"" << thubnail_name << "\" width=\"" << width << "\" height=\"" << height << "\" >" << "</td></tr>" << '\n';
+        out << "<tr>" << '\n';
+        out << "<td>" << info.file_name <<  "<img src=\"" << thubnail_name << "\" width=\"" << width << "\" height=\"" << height << "\" >" << "</td>" << '\n';
+        out << "<td>";
+        out <<      "<video width=\"" << width << "\" height=\"" << height << "\" controls>";
+        out <<           "<source src=\"" << info.file_path << "\" type=\"video/mp4\">";
+        out <<      "</video>";
+        out << "</td>" << '\n';
+        out << "</tr>" << '\n';
+        
         out << "<tr><td>" << "Path: " << "</td><td>" <<  info.file_path << "</td></tr>" << '\n';
         out << "<tr><td>" << "Extension: " << "</td><td>" <<  info.file_ext << "</td></tr>" << '\n';
         out << "<tr><td>" << "Format: " << "</td><td>" <<  info.iformat_name << "</td></tr>" << '\n';

@@ -23,8 +23,9 @@ using namespace videoinfo;
 
 int main()
 {
-    //std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/RX100";
-    std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/A7Riii";
+    std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/RX100";
+    //std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/A7Riii";
+    //std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-08-05";  // 37 videos
     //std::string video_folder = "/users/wmckay/Movies/Video/2019";
     //std::string video_folder = "/users/wmckay/Movies/Premiere Library 6";
     auto paths = VideoInfo::get_video_paths(video_folder, true);
