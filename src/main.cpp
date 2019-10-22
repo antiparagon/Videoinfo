@@ -30,33 +30,31 @@ int main(int argc, char** argv)
     po::options_description opts_desc("Options");
     opts_desc.add_options()
         ("help,h", "Print help messages")
-        ("dir,d", "Directory to scan");
+        ("dir,d", po::value<std::string>(), "Directory to scan");
     po::positional_options_description pos_opts_desc;
-    pos_opts_desc.add("directory", 1);
+    pos_opts_desc.add("dir", 1);
     
     po::variables_map vm;
     try
     {
-        auto parsed = po::command_line_parser(argc, argv)
-            .options(opts_desc)
-            .positional(pos_opts_desc)
-            .run();
-        po::store(parsed, vm);
+        po::store(po::command_line_parser(argc, argv).options(opts_desc)
+          .positional(pos_opts_desc).run(),vm);
 
-         if(vm.count("help") )
-         {
-           std::cout << "Videoinfo" << std::endl
+        if(vm.count("help") )
+        {
+          std::cout << "Videoinfo" << std::endl
                      << opts_desc << std::endl;
-           return 0;
-         }
+          return 0;
+        }
         
-        if(vm.count("directory"))
+        po::notify(vm); // throws on error, so do after help in case
+        // there are any problems
+        
+        if(vm.count("dir"))
         {
           video_folder = vm["dir"].as<std::string>();
         }
 
-        po::notify(vm); // throws on error, so do after help in case
-                        // there are any problems
     }
     catch(po::error& e)
     {
