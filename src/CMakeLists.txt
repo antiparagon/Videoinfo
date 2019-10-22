@@ -5,7 +5,7 @@ endif()
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.70 REQUIRED COMPONENTS filesystem)
+find_package(Boost 1.70 REQUIRED COMPONENTS filesystem program_options)
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 
@@ -40,7 +40,7 @@ set_property(TARGET videoinfo PROPERTY CXX_STANDARD 17)
 set_property(TARGET videoinfo PROPERTY CXX_STANDARD_REQUIRED TRUE)
 
 target_include_directories(videoinfo PRIVATE ${Boost_INCLUDE_DIR} )
-target_link_libraries(videoinfo PRIVATE Boost::filesystem)
+target_link_libraries(videoinfo PRIVATE ${Boost_LIBRARIES})
 
 target_link_libraries(videoinfo PRIVATE ${OpenCV_LIBS})
 

@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector>
 
+#include "boost/program_options.hpp"
+
 #include "VideoInfo.h"
 
 using namespace videoinfo;
@@ -17,17 +19,52 @@ using namespace videoinfo;
 /*
  TODO:
  - Grab a frame from anywhere in a video
- - Update output_html_video_report to use JPEG images, link to videos
  - Add number of people count, chip-outs of peoples faces in html report
  */
 
-int main()
+int main(int argc, char** argv)
 {
-    std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/RX100";
-    //std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-01-01/A7Riii";
-    //std::string video_folder = "/users/wmckay/Movies/Video/2019/2019-08-05";  // 37 videos
-    //std::string video_folder = "/users/wmckay/Movies/Video/2019";
-    //std::string video_folder = "/users/wmckay/Movies/Premiere Library 6";
+    std::string video_folder = ".";
+    
+    namespace po = boost::program_options;
+    po::options_description opts_desc("Options");
+    opts_desc.add_options()
+        ("help,h", "Print help messages")
+        ("dir,d", "Directory to scan");
+    po::positional_options_description pos_opts_desc;
+    pos_opts_desc.add("directory", 1);
+    
+    po::variables_map vm;
+    try
+    {
+        auto parsed = po::command_line_parser(argc, argv)
+            .options(opts_desc)
+            .positional(pos_opts_desc)
+            .run();
+        po::store(parsed, vm);
+
+         if(vm.count("help") )
+         {
+           std::cout << "Videoinfo" << std::endl
+                     << opts_desc << std::endl;
+           return 0;
+         }
+        
+        if(vm.count("directory"))
+        {
+          video_folder = vm["dir"].as<std::string>();
+        }
+
+        po::notify(vm); // throws on error, so do after help in case
+                        // there are any problems
+    }
+    catch(po::error& e)
+    {
+        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+        std::cerr << opts_desc << std::endl;
+        return 1;
+    }
+    
     auto paths = VideoInfo::get_video_paths(video_folder, true);
     
     std::vector<VideoInfo> video_infos;
@@ -35,42 +72,6 @@ int main()
         std::cerr << "Opening: " << video_path.string() << '\n';
         video_infos.push_back(VideoInfo::get_video_info(video_path));
     });
-    
-    /*
-    VideoInfo::output_txt_video_report(video_infos, std::cout);
-    return 0;
-    //*/
-    
-    /*
-    std::for_each(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& video_info){
-        std::string thumbnail_name = video_info.file_name + ".pgm";
-        //VideoInfo::save_video_thumbnail(video_info, thumbnail_name, 320, 180);
-        VideoInfo::save_video_thumbnail(video_info, thumbnail_name, 1920, 1080);
-    });
-    //*/
-    
-    /*
-    std::all_of(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
-
-        cv::Mat mat = VideoInfo::get_first_frame_mat(info, 1280, 720);
-        
-        if (mat.empty())
-        {
-            std::cout << "Could create Mat for first frame: " << info.file_path << '\n';
-            return false;
-        }
-        
-        std::string windowName = info.file_name;
-        cv::namedWindow(windowName);
-        cv::imshow(windowName, mat);
-        int key = cv::waitKey(0);
-        cv::destroyWindow(windowName);
-        
-        if(key == 's' || key == 'S') cv::imwrite(windowName + ".jpg", mat);
-         
-        return (key != 27);
-    });
-    //*/
     
     std::ofstream out("videoinfo.html");
     if(out)
