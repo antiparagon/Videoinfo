@@ -71,15 +71,9 @@ int main(int argc, char** argv)
         video_infos.push_back(VideoInfo::get_video_info(video_path));
     });
     
-    std::ofstream out("videoinfo.html");
-    if(out)
-    {
-        VideoInfo::output_html_video_report(video_infos, out);
-    }
-    else
-    {
-        std::cerr << "Unable to open file for html output" << '\n';
-    }
+    std::for_each(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
+        std::cout << info.file_name << " frames count: " << VideoInfo::get_frame_count(info) << '\n';
+    });
     return 0;
 }
 

@@ -59,6 +59,8 @@ namespace videoinfo
         unsigned int nb_streams = 0;
         std::vector<StreamInfo> streams;
         
+        static uint64_t get_frame_count(const VideoInfo &video_info);
+        
         static void save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height);
         
         static void save_video_thumbnail_ppm(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height);

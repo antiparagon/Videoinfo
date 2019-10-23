@@ -15,13 +15,150 @@ using namespace boost::algorithm;
 using namespace boost::filesystem;
 using namespace videoinfo;
 
+uint64_t VideoInfo::get_frame_count(const VideoInfo &video_info)
+{
+    uint64_t frames = 0;
+    
+    int curr_log_level = av_log_get_level();
+    av_log_set_level(AV_LOG_QUIET);
+    
+    AVFormatContext *pFormatContext = avformat_alloc_context();
+    if (!pFormatContext)
+    {
+        std::cerr << "ERROR could not allocate memory for Format Context" << '\n';
+        return frames;
+    }
+    
+    if (avformat_open_input(&pFormatContext, video_info.file_path.c_str(), NULL, NULL) != 0)
+    {
+        std::cerr << "ERROR could not open the file: " << video_info.file_path << '\n';
+        return frames;
+    }
+    
+    if (avformat_find_stream_info(pFormatContext,  NULL) < 0)
+    {
+        std::cerr << "ERROR could not get the stream info" << '\n';
+        return frames;
+    }
+    
+    AVCodec *pCodec = nullptr;
+    AVCodecParameters *pCodecParameters =  nullptr;
+    int video_stream_index = -1;
+    
+    ///////////////////////////////////////////////////////////////////
+    
+    for (int i = 0; i < pFormatContext->nb_streams; i++)
+    {
+        AVCodecParameters *pLocalCodecParameters =  NULL;
+        pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+        
+        AVCodec *pLocalCodec = nullptr;
+        
+        pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
+        
+        if(pLocalCodec == nullptr)
+        {
+            std::cerr << "ERROR unsupported codec!" << '\n';
+            continue;
+        }
+        
+        // when the stream is a video we store its index, codec parameters and codec
+        if(pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO)
+        {
+            if (video_stream_index == -1)
+            {
+                video_stream_index = i;
+                pCodec = pLocalCodec;
+                pCodecParameters = pLocalCodecParameters;
+                break;
+            }
+        }
+    }
+
+    AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
+    if (!pCodecContext)
+    {
+        std::cerr << "ERROR failed to allocated memory for AVCodecContext" << '\n';
+        return frames;
+    }
+    
+    if (avcodec_parameters_to_context(pCodecContext, pCodecParameters) < 0)
+    {
+        std::cerr << "ERROR failed to copy codec params to codec context" << '\n';
+        return frames;
+    }
+
+    if (avcodec_open2(pCodecContext, pCodec, nullptr) < 0)
+    {
+        std::cerr << "ERROR failed to open codec through avcodec_open2" << '\n';
+        return frames;
+    }
+
+    AVFrame *pFrame = av_frame_alloc();
+    if (!pFrame)
+    {
+        std::cerr << "ERROR failed to allocated memory for AVFrame" << '\n';
+        return frames;
+    }
+    
+    ////////////////////////////////////////////////
+    
+    // Allocate a color AVFrame structure
+    AVFrame *pFrameRGB = av_frame_alloc();
+    if(!pFrameRGB)
+    {
+        std::cerr << "ERROR failed to allocated memory for RGB AVFrame" << '\n';
+        return frames;
+    }
+
+    
+    /////////////////////////////////////////////////
+
+    AVPacket *pPacket = av_packet_alloc();
+    if (!pPacket)
+    {
+        std::cerr << "ERROR failed to allocated memory for AVPacket" << '\n';
+        return frames;
+    }
+    
+    int response = 0;
+
+    while (av_read_frame(pFormatContext, pPacket) >= 0)
+    {
+      // if it's the video stream
+      if (pPacket->stream_index == video_stream_index)
+      {
+        response = decode_packet(pPacket, pCodecContext, pFrame);
+        if(response == 0)
+        {
+            av_packet_unref(pPacket);
+            frames++;
+        }
+      }
+      av_packet_unref(pPacket);
+    }
+    
+    avformat_close_input(&pFormatContext);
+    avformat_free_context(pFormatContext);
+    av_packet_free(&pPacket);
+    av_frame_free(&pFrame);
+    av_frame_free(&pFrameRGB);
+    avcodec_free_context(&pCodecContext);
+    
+    ///////////////////////////////////////////////////////////////////
+    
+    av_log_set_level(curr_log_level);
+    
+    return frames;
+}
+
 void VideoInfo::save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height)
 {
     cv::Mat mat = VideoInfo::get_first_frame_mat(video_info, width, height);
     
     if (mat.empty())
     {
-        std::cerr << "Could create Mat for first frame: " << video_info.file_path << '\n';
+        std::cerr << "Couldn't create Mat for first frame: " << video_info.file_path << '\n';
         return;
     }
     
@@ -119,10 +256,10 @@ cv::Mat VideoInfo::get_first_frame_mat(const VideoInfo &video_info, int width, i
     // Allocate a color AVFrame structure
     AVFrame *pFrameRGB = av_frame_alloc();
     if(!pFrameRGB)
-     {
-          std::cerr << "ERROR failed to allocated memory for RGB AVFrame" << '\n';
-          return mat;
-      }
+    {
+        std::cerr << "ERROR failed to allocated memory for RGB AVFrame" << '\n';
+        return mat;
+    }
 
     // Determine required buffer size and allocate buffer
     int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
