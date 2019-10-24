@@ -72,7 +72,18 @@ int main(int argc, char** argv)
     });
     
     std::for_each(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
-        std::cout << info.file_name << " frames count: " << VideoInfo::get_frame_count(info) << '\n';
+        
+        cv::Mat mat = VideoInfo::get_frame_mat(info, 50, 640, 360);
+        
+        if (!mat.empty())
+        {
+            cv::imwrite(info.file_name + ".jpg", mat);
+        }
+        else
+        {
+            std::cerr << "Couldn't create Mat for frame: " << info.file_path << '\n';
+            return;
+        }
     });
     return 0;
 }

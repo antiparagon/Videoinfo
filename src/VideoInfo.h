@@ -59,6 +59,7 @@ namespace videoinfo
         unsigned int nb_streams = 0;
         std::vector<StreamInfo> streams;
         
+        static cv::Mat get_frame_mat(const VideoInfo &video_info, uint64_t frame_num, int width, int height);
         static uint64_t get_frame_count(const VideoInfo &video_info);
         
         static void save_video_thumbnail(const VideoInfo &video_info, const std::string &thumbnail_path, int width, int height);
