@@ -329,159 +329,7 @@ void VideoInfo::save_video_thumbnail(const VideoInfo &video_info, const std::str
 
 cv::Mat VideoInfo::get_first_frame_mat(const VideoInfo &video_info, int width, int height)
 {
-    cv::Mat mat;
-    
-    int curr_log_level = av_log_get_level();
-    av_log_set_level(AV_LOG_QUIET);
-    
-    AVFormatContext *pFormatContext = avformat_alloc_context();
-    if (!pFormatContext)
-    {
-        std::cerr << "ERROR could not allocate memory for Format Context" << '\n';
-        return mat;
-    }
-    
-    if (avformat_open_input(&pFormatContext, video_info.file_path.c_str(), NULL, NULL) != 0)
-    {
-        std::cerr << "ERROR could not open the file: " << video_info.file_path << '\n';
-        return mat;
-    }
-    
-    if (avformat_find_stream_info(pFormatContext,  NULL) < 0)
-    {
-        std::cerr << "ERROR could not get the stream info" << '\n';
-        return mat;
-    }
-    
-    AVCodec *pCodec = nullptr;
-    AVCodecParameters *pCodecParameters =  nullptr;
-    int video_stream_index = -1;
-    
-    ///////////////////////////////////////////////////////////////////
-    
-    for (int i = 0; i < pFormatContext->nb_streams; i++)
-    {
-        AVCodecParameters *pLocalCodecParameters =  NULL;
-        pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
-        
-        AVCodec *pLocalCodec = nullptr;
-        
-        pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
-        
-        if(pLocalCodec == nullptr)
-        {
-            std::cerr << "ERROR unsupported codec!" << '\n';
-            continue;
-        }
-        
-        // when the stream is a video we store its index, codec parameters and codec
-        if(pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO)
-        {
-            if (video_stream_index == -1)
-            {
-                video_stream_index = i;
-                pCodec = pLocalCodec;
-                pCodecParameters = pLocalCodecParameters;
-                break;
-            }
-        }
-    }
-
-    AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
-    if (!pCodecContext)
-    {
-        std::cerr << "ERROR failed to allocated memory for AVCodecContext" << '\n';
-        return mat;
-    }
-    
-    if (avcodec_parameters_to_context(pCodecContext, pCodecParameters) < 0)
-    {
-        std::cerr << "ERROR failed to copy codec params to codec context" << '\n';
-        return mat;
-    }
-
-    if (avcodec_open2(pCodecContext, pCodec, nullptr) < 0)
-    {
-        std::cerr << "ERROR failed to open codec through avcodec_open2" << '\n';
-        return mat;
-    }
-
-    AVFrame *pFrame = av_frame_alloc();
-    if (!pFrame)
-    {
-        std::cerr << "ERROR failed to allocated memory for AVFrame" << '\n';
-        return mat;
-    }
-    
-    ////////////////////////////////////////////////
-    
-    // Allocate a color AVFrame structure
-    AVFrame *pFrameRGB = av_frame_alloc();
-    if(!pFrameRGB)
-    {
-        std::cerr << "ERROR failed to allocated memory for RGB AVFrame" << '\n';
-        return mat;
-    }
-
-    // Determine required buffer size and allocate buffer
-    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
-    uint8_t * buffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-    av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer, AV_PIX_FMT_RGB24, width, height, 1);
-    
-    // initialize SWS context for software scaling
-    struct SwsContext *sws_ctx = sws_getContext(pCodecContext->width,
-                 pCodecContext->height,
-                 pCodecContext->pix_fmt,
-                 width,
-                 height,
-                 AV_PIX_FMT_RGB24,
-                 SWS_BILINEAR,
-                 NULL,
-                 NULL,
-                 NULL
-                 );
-    
-    /////////////////////////////////////////////////
-
-    AVPacket *pPacket = av_packet_alloc();
-    if (!pPacket)
-    {
-        std::cerr << "ERROR failed to allocated memory for AVPacket" << '\n';
-        return mat;
-    }
-    
-    int response = 0;
-
-    while (av_read_frame(pFormatContext, pPacket) >= 0)
-    {
-      // if it's the video stream
-      if (pPacket->stream_index == video_stream_index)
-      {
-        response = decode_packet(pPacket, pCodecContext, pFrame);
-        if(response == 0)
-        {
-            sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data, pFrame->linesize, 0, pCodecContext->height, pFrameRGB->data, pFrameRGB->linesize);
-            mat = cv::Mat(height, width, CV_8UC3, pFrameRGB->data[0]);
-            cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
-            av_packet_unref(pPacket);
-            break;
-        }
-      }
-      av_packet_unref(pPacket);
-    }
-    
-    avformat_close_input(&pFormatContext);
-    avformat_free_context(pFormatContext);
-    av_packet_free(&pPacket);
-    av_frame_free(&pFrame);
-    av_frame_free(&pFrameRGB);
-    avcodec_free_context(&pCodecContext);
-    
-    ///////////////////////////////////////////////////////////////////
-    
-    av_log_set_level(curr_log_level);
-    
-    return mat;
+    return get_frame_mat(video_info, 1, width, height);
 }
 
 
@@ -959,17 +807,16 @@ void VideoInfo::output_html_video_report(const std::vector<VideoInfo> &videoinfo
     {
         out << "<table>" << '\n';
         
-        std::string thubnail_name = info.file_name + ".jpg";
+        //std::string thubnail_name = info.file_name + ".jpg";
         int width = 320;
         int height = 180;
         
-        save_video_thumbnail(info, thubnail_name, width, height);
-        
         out << "<tr>" << '\n';
-        out << "<td>" << info.file_name <<  "<img src=\"" << thubnail_name << "\" width=\"" << width << "\" height=\"" << height << "\" >" << "</td>" << '\n';
+        out << "<td>" << info.file_name << "</td>" << '\n';
         out << "<td>";
-        out <<      "<video width=\"" << width << "\" height=\"" << height << "\" controls>";
-        out <<           "<source src=\"" << info.file_path << "\" type=\"video/mp4\">";
+        //out <<      "<video width=\"" << width << "\" height=\"" << height << "\" preload=\"auto\" loop=\"false\" autoplay=\"false\" controls>";
+        out <<      "<video width=\"" << width << "\" height=\"" << height << "\" preload=\"auto\" loop=\"false\" autoplay=\"false\" controls>";
+        out <<           "<source src=\"" << info.file_path << "\" type=\"video/mp4\"/>";
         out <<      "</video>";
         out << "</td>" << '\n';
         out << "</tr>" << '\n';

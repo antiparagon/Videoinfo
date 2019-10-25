@@ -71,20 +71,26 @@ int main(int argc, char** argv)
         video_infos.push_back(VideoInfo::get_video_info(video_path));
     });
     
-    std::for_each(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
-        
-        cv::Mat mat = VideoInfo::get_frame_mat(info, 50, 640, 360);
-        
-        if (!mat.empty())
-        {
-            cv::imwrite(info.file_name + ".jpg", mat);
-        }
-        else
-        {
-            std::cerr << "Couldn't create Mat for frame: " << info.file_path << '\n';
-            return;
-        }
-    });
+//    std::for_each(std::begin(video_infos), std::end(video_infos), [](const VideoInfo& info){
+//
+//        int frame_num = 300;
+//        cv::Mat mat = VideoInfo::get_frame_mat(info, frame_num, 640, 360);
+//
+//        if (!mat.empty())
+//        {
+//            cv::imwrite(info.file_name + "_" + std::to_string(frame_num) + ".jpg", mat);
+//        }
+//        else
+//        {
+//            std::cerr << "Couldn't create Mat for frame: " << info.file_path << '\n';
+//            return;
+//        }
+//
+//    });
+    
+    std::ofstream out("videos.html");
+    VideoInfo::output_html_video_report(video_infos, out);
+    
     return 0;
 }
 
