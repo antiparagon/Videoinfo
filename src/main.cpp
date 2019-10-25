@@ -18,7 +18,9 @@ using namespace videoinfo;
 
 /*
  TODO:
- - Grab a frame from anywhere in a video
+ - Save grayscale images
+ - Get difference between two frames
+ - Multithread grabbing frames from video
  - Add number of people count, chip-outs of peoples faces in html report
  */
 
@@ -42,8 +44,8 @@ int main(int argc, char** argv)
 
         if(vm.count("help") )
         {
-          std::cout << "Videoinfo" << std::endl
-                     << opts_desc << std::endl;
+          std::cout << "Videoinfo" << '\n'
+                    << opts_desc << '\n';
           return 0;
         }
         
@@ -58,8 +60,8 @@ int main(int argc, char** argv)
     }
     catch(po::error& e)
     {
-        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-        std::cerr << opts_desc << std::endl;
+        std::cerr << "ERROR: " << e.what() << "\n\n";
+        std::cerr << opts_desc << '\n';
         return 1;
     }
     
