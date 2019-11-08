@@ -18,10 +18,12 @@ using namespace videoinfo;
 
 /*
  TODO:
+ - Output pieces of video (with sound)
  - Save grayscale images
  - Get difference between two frames
  - Multithread grabbing frames from video
  - Add number of people count, chip-outs of peoples faces in html report
+ - Add Doxygen comments
  */
 
 int main(int argc, char** argv)
